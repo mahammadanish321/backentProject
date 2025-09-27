@@ -1,0 +1,17 @@
+{
+  "name": "newfullproject",
+  "version": "1.0.0",
+  "description": "this is a full project ",
+  "keywords": [
+    "javascript",
+    "backend",
+    "chai"
+  ],
+  "license": "ISC",
+  "author": "Mahammad Anish",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
