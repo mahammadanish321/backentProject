@@ -12,15 +12,26 @@ dotenv.config({
     path: './.env'
 });
 
+
+
+
 //this for creating express application
 const app = express();
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 8000; // Use the PORT from environment variables or default to 8000 
+
 
 // Connect to MongoDB
 connectDB()
+
+
+
+
+//this part not required to connect DB seprately as we are connecting DB using connectDB function above
+
 //then() method is used to handle the successful connection and catch() method to handle any errors during the connection process.
     .then(() => {
         // Start server only after DB connection is established
+        // Listening on specified port
         app.listen(port, () => {
             console.log(`\nServer is running at http://localhost:${port}`);
         });

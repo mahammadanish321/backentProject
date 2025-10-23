@@ -1,9 +1,10 @@
+//utility function to handle asynchronous request handlers in Express.js
 const asyncHandler =(requestHandelar)=>{
     (req,res,next)=>{
         Promise.resolve(requestHandelar(req,res,next)).catch((err)=>next(err))
     }
 }
-
+    
 
 export { asyncHandler }
 
