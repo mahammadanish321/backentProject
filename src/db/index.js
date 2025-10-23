@@ -1,6 +1,9 @@
+//import mongoose module and DB_NAME constant
 import mongoose from "mongoose";
 import { DB_NAME } from "../constants.js";
 
+
+// Function to connect to MongoDB using Mongoose and handle connection errors gracefully 
 const connectDB = async () => {
     try {
         const conectionINstionce = await mongoose.connect(`${process.env.MONGODB_URL}/${DB_NAME}`)
@@ -11,4 +14,4 @@ const connectDB = async () => {
     }
 }
 
-export default connectDB
+export default connectDB //import this function whereever you want to connect to DB

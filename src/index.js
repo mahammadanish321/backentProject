@@ -1,27 +1,34 @@
-// require ('dotenv').config({path:'./env'})
+//import and configure dotenv to manage environment variables and load variables from .env file
+//inport connectDB function to establish a connection to MongoDB
+//import express to create an Express application
+//(altaranative code) require ('dotenv').config({path:'./env'})
 import dotenv from "dotenv";
-// import mongoose from "mongoose";
-// import {DB_NAME} from "./constants"
-
-import connect from "./db/index.js";
+import express from "express";
+import connectDB from "./db/index.js";
 
 
-
+//this is required to read .env file and set the environment variables when we avoid alternative code and make sure to change type to module in package.json
 dotenv.config({
-    path:'./.env'
-})
+    path: './.env'
+});
 
+//this for creating express application
+const app = express();
+const port = process.env.PORT || 8000;
 
-connect()
-
-.thenn(()=>{
-    app.listen(process.env.PORT || 8000,()=>{
-        console.log(`server is runnig at port :${process.env.PORT}`)
+// Connect to MongoDB
+connectDB()
+//then() method is used to handle the successful connection and catch() method to handle any errors during the connection process.
+    .then(() => {
+        // Start server only after DB connection is established
+        app.listen(port, () => {
+            console.log(`\nServer is running at http://localhost:${port}`);
+        });
     })
-})
-.catch((err)=>{
-    console.log("mongodb connetion failed !!!",err)
-})
+    .catch((err) => {
+        console.log("MongoDB connection failed!", err);
+        process.exit(1);
+    });
 
 
 
