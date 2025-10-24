@@ -1,12 +1,13 @@
-//utility function to handle asynchronous request handlers in Express.js
+// Utility function to simplify async route handling and automatically catch errors
 const asyncHandler =(requestHandelar)=>{
-    (req,res,next)=>{
+   return (req,res,next)=>{
+        // Wraps the async request handler in a Promise and forwards any errors to Express's error handler
         Promise.resolve(requestHandelar(req,res,next)).catch((err)=>next(err))
     }
 }
     
 
-export { asyncHandler }
+export { asyncHandler } // Exporting asyncHandler for use in other modules
 
 
 

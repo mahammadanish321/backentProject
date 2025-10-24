@@ -1,7 +1,9 @@
-import mongoose, { Schema } from "mongoose";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import mongoose, { Schema } from "mongoose"; //import mongoose because we are using mongoose to create schema and model
+import bcrypt from "bcrypt"; //this is for hashing password that why import bcrypt
+import jwt from "jsonwebtoken"; //this is for generating token for authentication purpose
 
+
+//create user schema models
 const userSchema = new Schema(
     {
         username: {
@@ -65,23 +67,23 @@ const userSchema = new Schema(
 
 
 
-
+//hash(encrypting password) password before saving user document
 userSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) return next();
+    if (!this.isModified("password")) return next(); //if password is not modified then skip hashing
 
-    this.password = await bcrypt.hash(this.password, 10);
-    next();
+    this.password = await bcrypt.hash(this.password, 10); //hash the password with salt rounds 10
+    next(); //call next middleware
 });
 
 
 
-
+//method to compare password for login
 userSchema.methods.isPasswordCorrect = async function (password) {
-    return await bcrypt.compare(password, this.password);
+    return await bcrypt.compare(password, this.password);   //compare the plain password with hashed password
 }
 
 
-
+//method to generate access token and refresh token
 userSchema.methods.generateAccessToken = function () {
     return jwt.sign(
         {
@@ -97,6 +99,8 @@ userSchema.methods.generateAccessToken = function () {
     )
 }
 
+
+//method to generate refresh token
 userSchema.methods.generateRefreshToken = function () {
     return jwt.sign(
         {
@@ -112,5 +116,5 @@ userSchema.methods.generateRefreshToken = function () {
     )
 }
 
-
+//create user model and export it
 export const User = mongoose.model("User", userSchema);
