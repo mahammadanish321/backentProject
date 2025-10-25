@@ -3,8 +3,8 @@
 //import express to create an Express application
 //(altaranative code) require ('dotenv').config({path:'./env'})
 import dotenv from "dotenv";
-import express from "express";
 import connectDB from "./db/index.js";
+import { app } from "./app.js";
 
 
 //this is required to read .env file and set the environment variables when we avoid alternative code and make sure to change type to module in package.json
@@ -15,12 +15,11 @@ dotenv.config({
 
 
 
-//this for creating express application
-const app = express();
-const port = process.env.PORT || 8000; // Use the PORT from environment variables or default to 8000 
+// Port to listen on (app instance is imported from ./app.js)
+const port = process.env.PORT || 8000; // Use the PORT from environment variables or default to 8000
 
 
-// Connect to MongoDB
+// Connect to MongoDB which is imported from db/index.js file
 connectDB()
 
 

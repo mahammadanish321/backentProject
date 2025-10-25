@@ -22,4 +22,13 @@ app.use(express.static("public")) //to serve static files from the "public" dire
 app.use(cookieparser()) //to parse cookies from incoming requests
 
 
+
+//routes implement
+import userRoutes from "./routes/user.routes.js" //importing user routes module
+
+//routes declaration
+app.use("/api/v1/users", userRoutes) //mounting user routes at /api/v1/users path
+
+
+
 export{ app } //exporting the app instance (3)
