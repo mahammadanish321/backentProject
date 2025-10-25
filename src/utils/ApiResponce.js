@@ -7,4 +7,6 @@ class ApiResponce {
         this.success = statusCode < 300; //true if status code is less than 300 
 
     }
-}        
+}      
+
+export { ApiResponce };//exporting ApiResponce class for use in other parts of the application
