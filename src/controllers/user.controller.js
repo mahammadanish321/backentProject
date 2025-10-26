@@ -12,6 +12,7 @@ import { ApiResponce } from '../utils/ApiResponce.js'; //importing ApiResponce c
 
 // Controller function to handle user registration (registerUser exsample)
 const registerUser = asyncHandler(async (req, res) => {
+    //algorithm
     //get user data from frontend
     //validate-not empty
     //check if user already exists : username
@@ -29,45 +30,64 @@ const registerUser = asyncHandler(async (req, res) => {
     if (fullName === "") {
         throw new ApiError(400, "Full name is required");
     }
-    if (password.length < 6 || password.length > 20 || password.length === 0 || password === "") {
-        throw new ApiError(400, "password not in format");
+    if (!password || password.length < 6 || password.length > 20) {
+        throw new ApiError(400, "Password not in valid format");
     }
     if (username === "") {
         throw new ApiError(400, "username is required");
     }
-    if (email === "" || email.length === 0 || !email || !email.includes("@")) {
+    if ( !email || !email.includes("@")) {
         throw new ApiError(400, "email is required and cheak format");
     }
-    const existingUser = User.findOne({ $or: [{ email: email }, { username: username }] })
+
+
+    //check if user already exists dependent on email and username in database
+    const existingUser = await User.findOne({ $or: [{ email: email }, { username: username }] })
     if (existingUser) {
         throw new ApiError(409, "User already exists with given email or username");
     }
 
-
+    // console.log("req.files:", req.files);
     const avatarLocalPath = req.files?.avatar[0]?.path
-    const coverImageLocalPath = req.files?.coverImage[0]?.path
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path
 
+
+
+
+    let coverImageLocalPath ;
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path;
+    }
+
+
+
+
+
+    
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar image is required");
     }
 
     const avatar = await uploadOnCloudinary(avatarLocalPath)
-    const coverImage = await uploadOnCloudinary(coverImageLocalPath)
-
     if (!avatar) {
         throw new ApiError(400, "Failed to upload avatar image");
     }
 
+    let coverImage = null;
+    if (coverImageLocalPath) {
+        coverImage = await uploadOnCloudinary(coverImageLocalPath);
+    }
+
     const user = await User.create({
         fullName,
-        email: avatar.url,
-        coverImage: coverImage.url || "",
-        username,
-        password,
         email,
+        coverImage: coverImage?.url || "",
+        avatar: avatar.url,
+        username: username.toLowerCase(),
+        password
     })
 
-
+    //fetch the created user from db to remove password and refresh token fields from response 
     const createdUser = await User.findByIdAndUpdate(user._id).select("-password -refreshToken");
 
 
