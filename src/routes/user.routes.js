@@ -2,6 +2,7 @@
 import { Router } from "express";
 import { registerUser } from "../controllers/user.controller.js"; //importing registerUser controller function
 import { upload } from '../middlewares/multer.middleware.js' //importing multer upload middleware for handling file uploads
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 
 
@@ -19,7 +20,11 @@ router.route("/register").post(
                       maxCount: 1
                  } //field name coverImage for single file
              ]),
-    registerUser);
+    registerUser)
+
+ router.route("/login").post(loginUser)
+//  secure route 
+router.route("/logout").post(verifyJWT, logoutUser)
 
 
 // Exporting the router to be used in other parts of the application
