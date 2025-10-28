@@ -5,13 +5,15 @@ import { uploadOnCloudinary } from '../utils/cloudnary.js'; //importing uploadOn
 import { ApiResponce } from '../utils/ApiResponce.js'; //importing ApiResponce class for standardized API responses
 
 
-
+// function to generate access and refresh token and save refresh token in db
 const generateAccessAndRefreshToken = async (userId) => {
     try {
         const user = await User.findById(userId)
-        const accessToken = user.generateAccessToken()
-        const refreshToken = user.generateRefreshToken()
+        const accessToken = user.generateAccessToken() // the method (generateAccessToken()) from user model 
+        const refreshToken = user.generateRefreshToken() //method (....()) from user model 
 
+
+         //save refresh token in db
         user.refreshToken = refreshToken
         user.save({ validateBeforeSave: false });
 
@@ -25,7 +27,7 @@ const generateAccessAndRefreshToken = async (userId) => {
 
 
 
-// Controller function to handle user registration (registerUser exsample)
+// Controller function to handle user registration
 const registerUser = asyncHandler(async (req, res) => {
     //algorithm
     //get user data from frontend
@@ -119,6 +121,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 
 
+// controller function to handle user login
 const loginUser = asyncHandler(async (req, res) => {
 
 
@@ -132,16 +135,18 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const { email, username, password } = req.body;
 
+
+    // this is to check if either username or email is provided in the request body. If neither is provided, it throws an ApiError with a 400 status code and a message indicating that either username or email is required.
     if (!username || !email) {
         throw new ApiError(400, "Username or email required")
     }
-
+    // Finding a user in the database whose username or email matches the provided username or email from the request body.
     const user = await User.findOne({
 
-        $or: [{ username }, { email }]
+        $or: [{ username }, { email }] //this is used to perform a logical OR operation in MongoDB queries. It allows you to specify multiple conditions, and if any of those conditions are met, the document will be considered a match.
 
     })
-
+    // now hare we are checking if the user is found in the database based on the provided username or email. If no user is found (i.e., the user variable is null or undefined), it throws an ApiError with a 404 status code and a message indicating that the user was not found.
     if (!user) {
         throw new ApiError(404, "User not found")
     }
@@ -149,16 +154,18 @@ const loginUser = asyncHandler(async (req, res) => {
 
 
 
-
+    // here we are validating the provided password against the stored password for the found user. It uses the isPasswordCorrect method (which is assumed to be defined in the User model) to check if the provided password matches the stored password. If the password is incorrect, it throws an ApiError with a 401 status code and a message indicating that the user password is invalid.
     const isPasswordValid = await user.isPasswordCorrect(password);
-
+    // now the verible isPasswordValid will be true if the password is correct, and false otherwise.
     if (!isPasswordValid) {
         throw new ApiError(401, "Invalid user password");
     }
 
 
 
-
+    // this is so important part of code
+    // here we are generating access and refresh tokens for the authenticated user by calling the generateAccessAndRefreshToken function, passing the user's unique identifier (user._id) as an argument. This function is expected to return an object containing both the access token and refresh token.
+    
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
 
     const loggedInUser = await User.findById(user._id).
@@ -170,12 +177,15 @@ const loginUser = asyncHandler(async (req, res) => {
         secure: true
     }
 
-    return res.status(200).cookie("accessatoken", accessToken, option)
+    // explanation of below code : basicly the code is responsible for sending a successful login response to the client, including setting cookies for access and refresh tokens.
+    // setting the cookies for access and refresh tokens
+    return res.status(200)
+        .cookie("accessatoken", accessToken, option)
         .cookie("refreshToken", refreshToken, option)
         .json(
             new ApiResponce(
                 200, {
-                user: loggedInUser, accessToken, refreshToken
+                user: loggedInUser, accessToken, refreshToken //sending the logged in user data along with access and refresh token in response body
             }, "Uer login succesfull"
             )
         )
@@ -188,24 +198,28 @@ const loginUser = asyncHandler(async (req, res) => {
 
 })
 
+
+
+
+// controller function to handle user logout
 const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, {
         $set: {
-            refreshToken: undefined
+            refreshToken: undefined // Clear the refresh token on logout because user is logging out when user log out system should not allow to generate new access token using old refresh token also remove the refresh token from db
         }
-    }, { new: true })
+    }, { new: true }) //it is used to return the updated document after the update operation is performed.
 
-
+    //option to return the updated document
     const option = {
-        httpOnly: true,
-        secure: true
+        httpOnly: true, //it helps to mitigate the risk of client-side script accessing the protected cookie data
+        secure: true //it ensures that the cookie is only sent over secure HTTPS connections, enhancing the security of the cookie during transmission
     }
-
+    // it clears the "accessatoken" and "refreshToken" cookies from the client's browser and sends a JSON response indicating that the user has been logged out successfully.
     return res.status(200)
    .clearCookie("accessatoken", option)
    .clearCookie("refreshToken", option)
    .json(
-       new ApiResponce(200, {}, "User logged out successfully")
+       new ApiResponce(200, {}, "User logged out successfully") //indicates successful logout
    )
 
 
@@ -225,8 +239,9 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 
 
-// Exporting the registerUser controller function for use in other modules
+// Exporting the registerUser, loginUser and logoutUser controller function for use in other modules
 export {
     registerUser,
-    loginUser
+    loginUser,
+    logoutUser
 }

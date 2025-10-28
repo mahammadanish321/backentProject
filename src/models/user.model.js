@@ -82,7 +82,8 @@ userSchema.methods.isPasswordCorrect = async function (password) {
     return await bcrypt.compare(password, this.password);   //compare the plain password with hashed password
 }
 
-
+// what is access token?  ans is 
+    // Access Token: A short-lived token used to authenticate requests. It is sent in the Authorization header and is used to access protected resources.
 //method to generate access token and refresh token
 userSchema.methods.generateAccessToken = function () {
     return jwt.sign(
@@ -99,7 +100,8 @@ userSchema.methods.generateAccessToken = function () {
     )
 }
 
-
+//what is refresh token ? ans is 
+ // Refresh Token: A long-lived token used to obtain a new access token when the current one expires. It is usually stored securely and is not sent with every request.
 //method to generate refresh token
 userSchema.methods.generateRefreshToken = function () {
     return jwt.sign(
