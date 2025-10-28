@@ -169,7 +169,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
 
     const loggedInUser = await User.findById(user._id).
-        select("-passwoed -refreshToken")
+        select("-password -refreshToken")
 
 
     const option = {
