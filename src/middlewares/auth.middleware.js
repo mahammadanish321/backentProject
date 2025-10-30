@@ -1,29 +1,36 @@
-import { ApiError } from "../utils/ApiError";
-import { asyncHandler } from "../utils/asyncHandler";
+import { ApiError } from "../utils/ApiError.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken"
 import {User} from "../models/user.model.js";
 
-
-
-export const verifyJWT =asyncHandler(async(req,_,next)=>{
+export const verifyJWT = asyncHandler(async(req, _, next) => {
     try {
-        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ","");
+        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
+        
+        console.log("Token received:", token); // Debug log
     
-        if (!token){
-            throw new ApiError(401,"Unauthorized request")
+        if (!token) {
+            throw new ApiError(401, "Unauthorized request - No token provided")
         }
     
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET_KEY)
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+        console.log("Decoded token:", decodedToken); // Debug log
     
-        const user=await  User.findById(decodedToken?._Id).select("-password -refreshToken")
-        if (!user){
-        // next video have a duction hear 
-            throw new ApiError (401,"Unauthorized request - user not found")
+        const user = await User.findById(decodedToken?._id).select("-password -refreshToken")
+        if (!user) {
+            throw new ApiError(401, "Invalid token - User not found")
         }
     
         req.user = user;
         next();
     } catch (error) {
-        throw new ApiError (401,error?.message || "invalid access token")
+        // More specific error messages
+        if (error.name === 'JsonWebTokenError') {
+            throw new ApiError(401, "Invalid token format")
+        }
+        if (error.name === 'TokenExpiredError') {
+            throw new ApiError(401, "Token has expired")
+        }
+        throw new ApiError(401, error?.message || "Invalid access token")
     }
 })

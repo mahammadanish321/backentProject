@@ -1,8 +1,9 @@
 // import express and other necessary modules routes is defined here
 import { Router } from "express";
-import { registerUser } from "../controllers/user.controller.js"; //importing registerUser controller function
+import {registerUser, loginUser, logoutUser} from "../controllers/user.controller.js"; //importing registerUser controller function
 import { upload } from '../middlewares/multer.middleware.js' //importing multer upload middleware for handling file uploads
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+
 
 
 
@@ -22,7 +23,7 @@ router.route("/register").post(
              ]),
     registerUser)
 
- router.route("/login").post(loginUser)
+ router.route("/login").post(upload.none(),loginUser)
 //  secure route 
 router.route("/logout").post(verifyJWT, logoutUser)
 

@@ -5,6 +5,10 @@ import { uploadOnCloudinary } from '../utils/cloudnary.js'; //importing uploadOn
 import { ApiResponce } from '../utils/ApiResponce.js'; //importing ApiResponce class for standardized API responses
 
 
+
+
+
+
 // function to generate access and refresh token and save refresh token in db
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -15,7 +19,7 @@ const generateAccessAndRefreshToken = async (userId) => {
 
          //save refresh token in db
         user.refreshToken = refreshToken
-        user.save({ validateBeforeSave: false });
+        user.save({ validateBeforeSave: false }); //validateBeforeSave becuse when we try to save the rejreshTolen in user model we requard the password but hear we dont have password so we do this. that mean it will be save before validate without password. 
 
         return { accessToken, refreshToken }
 
@@ -24,6 +28,18 @@ const generateAccessAndRefreshToken = async (userId) => {
         throw new ApiError(500, "sonthing went wrong while generating assess and refresh token")
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -121,6 +137,20 @@ const registerUser = asyncHandler(async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // controller function to handle user login
 const loginUser = asyncHandler(async (req, res) => {
 
@@ -134,16 +164,17 @@ const loginUser = asyncHandler(async (req, res) => {
 
 
     const { email, username, password } = req.body;
+   
 
 
     // this is to check if either username or email is provided in the request body. If neither is provided, it throws an ApiError with a 400 status code and a message indicating that either username or email is required.
-    if (!username || !email) {
+    if (!(username || email)) {
         throw new ApiError(400, "Username or email required")
     }
     // Finding a user in the database whose username or email matches the provided username or email from the request body.
     const user = await User.findOne({
 
-        $or: [{ username }, { email }] //this is used to perform a logical OR operation in MongoDB queries. It allows you to specify multiple conditions, and if any of those conditions are met, the document will be considered a match.
+        $or: [{ username} ,{email }] //this is used to perform a logical OR operation in MongoDB queries. It allows you to specify multiple conditions, and if any of those conditions are met, the document will be considered a match.
 
     })
     // now hare we are checking if the user is found in the database based on the provided username or email. If no user is found (i.e., the user variable is null or undefined), it throws an ApiError with a 404 status code and a message indicating that the user was not found.
@@ -171,16 +202,17 @@ const loginUser = asyncHandler(async (req, res) => {
     const loggedInUser = await User.findById(user._id).
         select("-password -refreshToken")
 
-
+    //this is cookis sending by object 
     const option = {
-        httpOnly: true,
+        httpOnly: true, //only modyfi by server
         secure: true
     }
 
     // explanation of below code : basicly the code is responsible for sending a successful login response to the client, including setting cookies for access and refresh tokens.
     // setting the cookies for access and refresh tokens
-    return res.status(200)
-        .cookie("accessatoken", accessToken, option)
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, option)
         .cookie("refreshToken", refreshToken, option)
         .json(
             new ApiResponce(
@@ -201,6 +233,28 @@ const loginUser = asyncHandler(async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // controller function to handle user logout
 const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, {
@@ -212,11 +266,11 @@ const logoutUser = asyncHandler(async (req, res) => {
     //option to return the updated document
     const option = {
         httpOnly: true, //it helps to mitigate the risk of client-side script accessing the protected cookie data
-        secure: true //it ensures that the cookie is only sent over secure HTTPS connections, enhancing the security of the cookie during transmission
+        secure: true, //it ensures that the cookie is only sent over secure HTTPS connections, enhancing the security of the cookie during transmission
     }
     // it clears the "accessatoken" and "refreshToken" cookies from the client's browser and sends a JSON response indicating that the user has been logged out successfully.
     return res.status(200)
-   .clearCookie("accessatoken", option)
+   .clearCookie("accessToken", option)
    .clearCookie("refreshToken", option)
    .json(
        new ApiResponce(200, {}, "User logged out successfully") //indicates successful logout

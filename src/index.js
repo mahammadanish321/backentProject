@@ -7,6 +7,9 @@ import connectDB from "./db/index.js";
 import { app } from "./app.js";
 
 
+
+
+
 //this is required to read .env file and set the environment variables when we avoid alternative code and make sure to change type to module in package.json
 dotenv.config({
     path: './.env'

@@ -83,15 +83,15 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 }
 
 // what is access token?  ans is 
-    // Access Token: A short-lived token used to authenticate requests. It is sent in the Authorization header and is used to access protected resources.
+// Access Token: A short-lived token used to authenticate requests. It is sent in the Authorization header and is used to access protected resources.
 //method to generate access token and refresh token
 userSchema.methods.generateAccessToken = function () {
     return jwt.sign(
         {
-        id: this._id,
-        email: this.email,
-        username: this.username,
-        fullname: this.fullname,
+            _id: this._id,
+            email: this.email,
+            username: this.username,
+            fullname: this.fullname,
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
@@ -101,15 +101,13 @@ userSchema.methods.generateAccessToken = function () {
 }
 
 //what is refresh token ? ans is 
- // Refresh Token: A long-lived token used to obtain a new access token when the current one expires. It is usually stored securely and is not sent with every request.
+// Refresh Token: A long-lived token used to obtain a new access token when the current one expires. It is usually stored securely and is not sent with every request.
 //method to generate refresh token
 userSchema.methods.generateRefreshToken = function () {
     return jwt.sign(
         {
-        id: this._id,
-        email: this.email,
-        username: this.username,
-        fullname: this.fullname,
+            _id: this._id,
+
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
