@@ -4,7 +4,8 @@ import multer from "multer"; // Importing multer for handling file uploads in lo
 
 //configuring storage for multer to store files in 'public/temp' directory with original filename
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  
+  destination: function (req, file, cb)  {
     cb(null, './public/temp') //specifying the destination directory for uploaded files
   },
   filename: function (req, file, cb) {

@@ -3,6 +3,9 @@ import { ApiError } from '../utils/ApiError.js'; //importing ApiError class for 
 import { User } from '../models/user.model.js'; //importing User model to interact with user data in the database
 import { uploadOnCloudinary } from '../utils/cloudnary.js'; //importing uploadOnCloudinary function to handle file uploads to Cloudinary
 import { ApiResponce } from '../utils/ApiResponce.js'; //importing ApiResponce class for standardized API responses
+import jwt from "jsonwebtoken";  //importing for verifin token
+
+
 
 
 
@@ -17,7 +20,7 @@ const generateAccessAndRefreshToken = async (userId) => {
         const refreshToken = user.generateRefreshToken() //method (....()) from user model 
 
 
-         //save refresh token in db
+        //save refresh token in db
         user.refreshToken = refreshToken
         user.save({ validateBeforeSave: false }); //validateBeforeSave becuse when we try to save the rejreshTolen in user model we requard the password but hear we dont have password so we do this. that mean it will be save before validate without password. 
 
@@ -164,7 +167,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
 
     const { email, username, password } = req.body;
-   
+
 
 
     // this is to check if either username or email is provided in the request body. If neither is provided, it throws an ApiError with a 400 status code and a message indicating that either username or email is required.
@@ -174,7 +177,7 @@ const loginUser = asyncHandler(async (req, res) => {
     // Finding a user in the database whose username or email matches the provided username or email from the request body.
     const user = await User.findOne({
 
-        $or: [{ username} ,{email }] //this is used to perform a logical OR operation in MongoDB queries. It allows you to specify multiple conditions, and if any of those conditions are met, the document will be considered a match.
+        $or: [{ username }, { email }] //this is used to perform a logical OR operation in MongoDB queries. It allows you to specify multiple conditions, and if any of those conditions are met, the document will be considered a match.
 
     })
     // now hare we are checking if the user is found in the database based on the provided username or email. If no user is found (i.e., the user variable is null or undefined), it throws an ApiError with a 404 status code and a message indicating that the user was not found.
@@ -196,7 +199,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     // this is so important part of code
     // here we are generating access and refresh tokens for the authenticated user by calling the generateAccessAndRefreshToken function, passing the user's unique identifier (user._id) as an argument. This function is expected to return an object containing both the access token and refresh token.
-    
+
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
 
     const loggedInUser = await User.findById(user._id).
@@ -270,11 +273,11 @@ const logoutUser = asyncHandler(async (req, res) => {
     }
     // it clears the "accessatoken" and "refreshToken" cookies from the client's browser and sends a JSON response indicating that the user has been logged out successfully.
     return res.status(200)
-   .clearCookie("accessToken", option)
-   .clearCookie("refreshToken", option)
-   .json(
-       new ApiResponce(200, {}, "User logged out successfully") //indicates successful logout
-   )
+        .clearCookie("accessToken", option)
+        .clearCookie("refreshToken", option)
+        .json(
+            new ApiResponce(200, {}, "User logged out successfully") //indicates successful logout
+        )
 
 
 })
@@ -286,8 +289,61 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 
 
+//this controll is for stay login when user assess token is expaiard. wher we update the user access token using his refreash token which is store in cookies or user body.
+const refreshAccessToken = asyncHandler(async (req, res) => {
+
+    //
+    const incomingRefreshToken = req.cookie.refreshToken || req.body.refreshToken //take the refreshToken form either cookie or body.
 
 
+    //if incoming token is not avalable then throw a error 
+    if (!incomingRefreshToken) {
+        throw new ApiError(401, "unauthorize request")
+    }
+
+    try {
+        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+
+        console.log("Decoded token:", decodedToken); // Debug log
+
+
+        const user = await User.findById(decodedToken?._id)
+
+        if (!user) {
+            throw new ApiError(401, "invalid user")
+        }
+
+        if (incomingRefreshToken !== user?.refreshToken) {
+            throw new ApiError(401, "refreash token is expaieard or used")
+        }
+
+        const option = {
+            httpOnly: true,
+            secure: true
+        }
+
+        const { newRefreshToken, accessToken } = await generateAccessAndRefreshToken(user._id)
+
+        res.body
+            .status(200)
+            .cookie("accessToken", accessToken, option)
+            .cookie("refreshToken", newRefreshToken, option)
+            .json(
+                new ApiResponce(
+                    200,
+                    { accessToken, refreshToken: newRefreshToken },
+                    "Access token is refresheed succesfully"
+                )
+            )
+    } catch (error) {
+        throw new ApiError(401, error?.message || "invalid refrace token")
+    }
+
+
+
+
+
+})
 
 
 
@@ -297,5 +353,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 export {
     registerUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    refreshAccessToken
+
 }

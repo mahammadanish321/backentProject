@@ -3,7 +3,7 @@
 
 import { ApiError } from "../utils/ApiError.js"; //for handaling error
 import { asyncHandler } from "../utils/asyncHandler.js"; //for handaling async
-import jwt from "jsonwebtoken";  //importing for token 
+import jwt from "jsonwebtoken";  //importing for verifin token
 import {User} from "../models/user.model.js"; // using user method 
 
 // hear the export and methort decleartion at same time 
@@ -32,7 +32,7 @@ export const verifyJWT = asyncHandler(async(req, _, next) => {
         if (!user) {
             throw new ApiError(401, "Invalid token - User not found")
         }
-    
+         
         req.user = user;
         next(); //pass throw to next.
         
