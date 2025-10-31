@@ -1,0 +1,22 @@
+Hear i ducces about my kwoing this what i learn form this projet ...
+
+what is public folder for ?
+-The public folder is save our local images and folders temparery
+also it can be use as temparery images or files or folder holding station 
+i use it as the temparery images holding station by using mult middleware 
+
+the work flow is-
+when user uplode the imege the image will be save the public tem folder temporary by mult 
+becuse some letance resion like (faild to uplode)
+now ones it uploded in projet/temp then its uploded in cloudinariy (what is the the cloudinary this the image or video uploding databace and return us the URL of the images) after gatting the image URL we can store the URL in mongodb 
+
+
+some importent folder folders and its sub folder---
+
+A.src-
+1.conteollers
+2.db
+3.middleware
+4.models
+5.routs
+6.utils

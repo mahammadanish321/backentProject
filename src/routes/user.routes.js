@@ -22,11 +22,8 @@ router.route("/register").post(
                  } //field name coverImage for single file
              ]),
     registerUser)
-
+    
  router.route("/login").post(upload.none(),loginUser)
-
-
-
  //  secure route 
 //verifyJWT is the middleware which import form auth.middleware.js
 router.route("/logout").post(verifyJWT, logoutUser)
