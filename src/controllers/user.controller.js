@@ -292,6 +292,8 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 
 //this controll is for stay login when user assess token is expaiard. wher we update the user access token using his refreash token which is store in cookies or user body.
+//algritham
+//
 const refreshAccessToken = asyncHandler(async (req, res) => {
 
     //
@@ -346,6 +348,21 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 
 })
+
+
+//password changing algrothem 
+// .declear the variables (old,new,conform)
+// .chack the old password is correct or not by accassing the old password
+// .chack the the old one and the new one is same or not ? is same throw the error 
+// .also chack the the new and conform is same or not is same then ok 
+// .if every thing is ok then push the new password in user password
+
+
+
+
+
+
+
 
 
 

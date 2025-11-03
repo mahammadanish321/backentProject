@@ -6,7 +6,7 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 
 
-
+ 
 // Creating a new router instance for user-related routes 
 const router = Router();
 // Defining route for user registration at /register endpoint
