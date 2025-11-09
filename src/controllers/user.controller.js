@@ -4,6 +4,7 @@ import { User } from '../models/user.model.js'; //importing User model to intera
 import { uploadOnCloudinary } from '../utils/cloudnary.js'; //importing uploadOnCloudinary function to handle file uploads to Cloudinary
 import { ApiResponce } from '../utils/ApiResponce.js'; //importing ApiResponce class for standardized API responses
 import jwt from "jsonwebtoken";  //importing for verifin token
+import { Subscription } from '../models/subscription.model.js';
 
 
 
@@ -452,7 +453,7 @@ const updateUsrAvatar = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Avatar file is missing(url missing)")
     }
 
-    const user=await User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {
@@ -463,10 +464,10 @@ const updateUsrAvatar = asyncHandler(async (req, res) => {
     ).select("-password")
 
     return res
-    .status(200)
-    .json(
-        new ApiResponce(200,user,"avatar updated succesfully")
-    )
+        .status(200)
+        .json(
+            new ApiResponce(200, user, "avatar updated succesfully")
+        )
 })
 
 
@@ -491,7 +492,7 @@ const updateUsrCoverImage = asyncHandler(async (req, res) => {
         throw new ApiError(400, "cover image is missing(url missing)")
     }
 
-    const user= await User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {
@@ -502,12 +503,93 @@ const updateUsrCoverImage = asyncHandler(async (req, res) => {
     ).select("-password")
 
     return res
-    .status(200)
-    .json(
-        new ApiResponce(200,user,"cover image updated succesfully")
-    )
+        .status(200)
+        .json(
+            new ApiResponce(200, user, "cover image updated succesfully")
+        )
 })
 
+
+
+
+
+
+
+
+
+
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+    const { username } = req.params
+    if (!username) {
+        throw new ApiError(400, "user name not avalavel ")
+    }
+    const channel = await User.aggregate([
+        {
+            $match: {
+                username: username?.toLowerCase()
+            }
+        },
+        {
+            $lookup: {
+                from: "PushSubscriptionOptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup: {
+                from: "PushSubscriptionOptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribersTo"
+            }
+        },
+        {
+            $addFields: {
+                SubscribersCount: {
+                    $size: "$subscribers"
+                },
+
+                channelsSubscribersToCount: {
+                    $size: "$subscribersTo"
+                },
+                isSubscribed: {
+                    $cond: {
+                        if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+                        then: true,
+                        else: false
+                    }
+                }
+
+            }
+        },
+        {
+            $project: {
+                fullName: 1,
+                username: 1,
+                SubscribersCount: 1,
+                channelsSubscribersToCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverImage: 1,
+                email: 1
+
+            }
+        }
+
+    ])
+
+    if (!channel.length) {
+        throw new ApiError(404, "channel does not exists")
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponce(200, channel[0], "User channel flatch succesfully")
+        )
+})
 
 
 
@@ -522,5 +604,6 @@ export {
     getCurrentUesr,
     updateAccountDetails,
     updateUsrAvatar,
-    updateUsrCoverImage
+    updateUsrCoverImage,
+    getUserChannelProfile
 }
