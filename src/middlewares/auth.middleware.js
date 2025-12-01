@@ -1,5 +1,5 @@
-//This middleware manly for handaling the logout oparation becsuse when useer try to logout obbesly he dont fill any form for logouting but if he dont fill any form then how we access him databace ?
-//for that spasafis resion use this method 
+//This middleware manly for handaling the logout type(user access needed but we dont want to take that) oparation becsuse when useer try to logout obbesly he dont fill any form for logouting but if he dont fill any form then how we access him databace ?
+//for that spasafis resion use this middleware 
 
 import { ApiError } from "../utils/ApiError.js"; //for handaling error
 import { asyncHandler } from "../utils/asyncHandler.js"; //for handaling async

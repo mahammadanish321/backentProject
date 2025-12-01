@@ -4,7 +4,7 @@ import { User } from '../models/user.model.js'; //importing User model to intera
 import { uploadOnCloudinary } from '../utils/cloudnary.js'; //importing uploadOnCloudinary function to handle file uploads to Cloudinary
 import { ApiResponce } from '../utils/ApiResponce.js'; //importing ApiResponce class for standardized API responses
 import jwt from "jsonwebtoken";  //importing for verifin token
-import { Subscription } from '../models/subscription.model.js';
+// import { Subscription } from '../models/subscription.model.js';
 
 
 
@@ -64,6 +64,8 @@ const registerUser = asyncHandler(async (req, res) => {
     // console.log("email:", email);
     // console.log("password:", password);
 
+
+    
     if (fullName === "") {
         throw new ApiError(400, "Full name is required");
     }
@@ -79,7 +81,16 @@ const registerUser = asyncHandler(async (req, res) => {
 
 
     //check if user already exists dependent on email and username in database
-    const existingUser = await User.findOne({ $or: [{ email: email }, { username: username }] })
+    const existingUser = await User.findOne(
+        { 
+            $or: 
+            [
+                { email: email }, 
+                { username: username }
+            ] 
+        }
+    )
+    
     if (existingUser) {
         throw new ApiError(409, "User already exists with given email or username");
     }
@@ -221,7 +232,7 @@ const loginUser = asyncHandler(async (req, res) => {
         .json(
             new ApiResponce(
                 200, {
-                user: loggedInUser, accessToken, refreshToken //sending the logged in user data along with access and refresh token in response body
+                user: loggedInUser, accessToken, //sending the logged in user data along with access token in response body
             }, "Uer login succesfull"
             )
         )
