@@ -65,7 +65,7 @@ const registerUser = asyncHandler(async (req, res) => {
     // console.log("password:", password);
 
 
-    
+
     if (fullName === "") {
         throw new ApiError(400, "Full name is required");
     }
@@ -82,15 +82,15 @@ const registerUser = asyncHandler(async (req, res) => {
 
     //check if user already exists dependent on email and username in database
     const existingUser = await User.findOne(
-        { 
-            $or: 
-            [
-                { email: email }, 
-                { username: username }
-            ] 
+        {
+            $or:
+                [
+                    { email: email },
+                    { username: username }
+                ]
         }
     )
-    
+
     if (existingUser) {
         throw new ApiError(409, "User already exists with given email or username");
     }
@@ -306,10 +306,13 @@ const logoutUser = asyncHandler(async (req, res) => {
 //this controll is for stay login when user assess token is expaiard. wher we update the user access token using his refreash token which is store in cookies or user body.
 //algritham
 //
+
+
+//code_1
 const refreshAccessToken = asyncHandler(async (req, res) => {
 
     //
-    const incomingRefreshToken = req.cookie.refreshToken || req.body.refreshToken //take the refreshToken form either cookie or body.
+    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken //take the refreshToken form either cookie or body.
 
 
     //if incoming token is not avalable then throw a error 
@@ -320,7 +323,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     try {
         const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
 
-        console.log("Decoded token:", decodedToken); // Debug log
+        // console.log("Decoded token:", decodedToken); // Debug log
 
 
         const user = await User.findById(decodedToken?._id)
@@ -328,22 +331,23 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         if (!user) {
             throw new ApiError(401, "invalid user")
         }
+        // console.log ("SEE HEAR:",user)
 
         if (incomingRefreshToken !== user?.refreshToken) {
             throw new ApiError(401, "refreash token is expaieard or used")
         }
 
-        const option = {
+        const options = {
             httpOnly: true,
             secure: true
         }
 
         const { newRefreshToken, accessToken } = await generateAccessAndRefreshToken(user._id)
 
-        res.body
+        return res
             .status(200)
-            .cookie("accessToken", accessToken, option)
-            .cookie("refreshToken", newRefreshToken, option)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
             .json(
                 new ApiResponce(
                     200,
@@ -352,14 +356,13 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
                 )
             )
     } catch (error) {
-        throw new ApiError(401, error?.message || "invalid refrace token")
+        throw new ApiError(401, error?.message || "Invalid refresh token")
     }
-
-
-
-
-
 })
+
+
+
+
 
 
 
@@ -376,21 +379,41 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 // .also chack the the new and conform is same or not is same then ok 
 // .if every thing is ok then push the new password in user password
 
-const changeCurrentPassword = asyncHandler(async (req, res) => {
-    const { oldPasswoed, newpassword } = req.body;
+// const changeCurrentPassword = asyncHandler(async (req, res) => {
+//     const { oldPasswoed, newpassword } = req.body;
+//     const user = await User.findById(req.user?._id)
+//     const isPasswordCorrect = await user.isPasswordCorrect(oldPasswoed)
+
+//     if (!isPasswordCorrect) {
+//         throw new ApiError(400, "invalid old password");
+//     }
+
+//     user.password = newpassword
+//     await user.save({ validateBeforeSave: false })
+//     return res
+//         .status(200)
+//         .json(new ApiResponce(200, {}, "password change successfully"))
+
+// })
+
+const changeCurrentPassword = asyncHandler(async(req, res) => {
+    const {oldPassword, newPassword} = req.body
+
+    
+
     const user = await User.findById(req.user?._id)
-    const isPasswordCorrect = await user.isPasswordCorrect(oldPasswoed)
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
 
     if (!isPasswordCorrect) {
-        throw new ApiError(400, "invalid old password");
+        throw new ApiError(400, "Invalid old password")
     }
 
-    user.password = newpassword
-    await user.save({ validateBeforeSave: false })
-    return res
-        .status(200)
-        .json(new ApiResponce(200, {}, "password change successfully"))
+    user.password = newPassword
+    await user.save({validateBeforeSave: false})
 
+    return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password changed successfully"))
 })
 
 
@@ -610,7 +633,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 
 
 
-const getWatchHistory = asyncHandler(async(req, res) => {
+const getWatchHistory = asyncHandler(async (req, res) => {
     const user = await User.aggregate([
         {
             $match: {
@@ -642,8 +665,8 @@ const getWatchHistory = asyncHandler(async(req, res) => {
                         }
                     },
                     {
-                        $addFields:{
-                            owner:{
+                        $addFields: {
+                            owner: {
                                 $first: "$owner"
                             }
                         }
@@ -654,14 +677,14 @@ const getWatchHistory = asyncHandler(async(req, res) => {
     ])
 
     return res
-    .status(200)
-    .json(
-        new ApiResponse(
-            200,
-            user[0].watchHistory,
-            "Watch history fetched successfully"
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                user[0].watchHistory,
+                "Watch history fetched successfully"
+            )
         )
-    )
 })
 
 
