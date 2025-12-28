@@ -13,7 +13,7 @@ import {
   getUserChannelProfile, 
   getWatchHistory 
 } from "../controllers/user.controller.js"; //importing registerUser controller function
-import { upload } from '../middlewares/multer.middleware.js' //importing multer upload middleware for handling file uploads
+import { upload } from '../middlewares/multer.middleware.js'; //importing multer upload middleware for handling file uploads
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 

@@ -13,7 +13,7 @@ export const verifyJWT = asyncHandler(async(req, _, next) => {
         // the varible token he asked for the access token it can be provided by cookis or header (form login) 
         const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
         
-        console.log("Token received:", token); // Debug log
+        // console.log("Token received:", token); // Debug log
          //if token avelable this stape will pass
         if (!token) {
             throw new ApiError(401, "Unauthorized request - No token provided")
@@ -22,7 +22,7 @@ export const verifyJWT = asyncHandler(async(req, _, next) => {
         // hear decode the user access token
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
         
-        console.log("Decoded token:", decodedToken); // Debug log
+        // console.log("Decoded token:", decodedToken); // Debug log
         
         // by user dcoded access token find the user for currect persion logout 
         const user = await User.findById(decodedToken?._id).select("-password -refreshToken") //unselect the password and refreshtoken becuse we dont need thad in this point 

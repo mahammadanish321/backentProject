@@ -7,12 +7,6 @@ import jwt from "jsonwebtoken";  //importing for verifin token
 // import { Subscription } from '../models/subscription.model.js';
 
 
-
-
-
-
-
-
 // function to generate access and refresh token and save refresh token in db
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -33,20 +27,6 @@ const generateAccessAndRefreshToken = async (userId) => {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Controller function to handle user registration
 const registerUser = asyncHandler(async (req, res) => {
     //algorithm
@@ -61,8 +41,8 @@ const registerUser = asyncHandler(async (req, res) => {
     //return res
 
     const { fullName, email, username, password } = req.body;
-    // console.log("email:", email);
-    // console.log("password:", password);
+    console.log("email:", email);
+    console.log("password:", password);
 
 
 
@@ -149,23 +129,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
 })
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // controller function to handle user login
 const loginUser = asyncHandler(async (req, res) => {
 
@@ -245,31 +208,6 @@ const loginUser = asyncHandler(async (req, res) => {
 
 })
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // controller function to handle user logout
 const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, {
@@ -294,21 +232,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 })
 
-
-
-
-
-
-
-
-
-
 //this controll is for stay login when user assess token is expaiard. wher we update the user access token using his refreash token which is store in cookies or user body.
-//algritham
-//
-
-
-//code_1
 const refreshAccessToken = asyncHandler(async (req, res) => {
 
     //
@@ -360,47 +284,20 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 })
 
-
-
-
-
-
-
-
-
-
-
-
-
 //password changing algrothem 
 // .declear the variables (old,new,conform)
 // .chack the old password is correct or not by accassing the old password
 // .chack the the old one and the new one is same or not ? is same throw the error 
 // .also chack the the new and conform is same or not is same then ok 
 // .if every thing is ok then push the new password in user password
-
-// const changeCurrentPassword = asyncHandler(async (req, res) => {
-//     const { oldPasswoed, newpassword } = req.body;
-//     const user = await User.findById(req.user?._id)
-//     const isPasswordCorrect = await user.isPasswordCorrect(oldPasswoed)
-
-//     if (!isPasswordCorrect) {
-//         throw new ApiError(400, "invalid old password");
-//     }
-
-//     user.password = newpassword
-//     await user.save({ validateBeforeSave: false })
-//     return res
-//         .status(200)
-//         .json(new ApiResponce(200, {}, "password change successfully"))
-
-// })
-
 const changeCurrentPassword = asyncHandler(async(req, res) => {
-    const {oldPassword, newPassword} = req.body
+    const {oldPassword,newPassword} = req.body
 
+    console.log("SEE HEAR YOUR OLD_PASSWORD AND NEW_PASSWORD",oldPassword, newPassword);
+
+    if (!oldPassword || !newPassword) {
+        throw new ApiError(400, "oldPassword and newPassword are required");}
     
-
     const user = await User.findById(req.user?._id)
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
 
@@ -413,39 +310,16 @@ const changeCurrentPassword = asyncHandler(async(req, res) => {
 
     return res
     .status(200)
-    .json(new ApiResponse(200, {}, "Password changed successfully"))
+    .json(new ApiResponce(200, {}, "Password changed successfully"))
 })
-
-
-
-
-
-
-
-
-
-
-
-
 
 const getCurrentUesr = asyncHandler(async (req, res) => {
+
+const user=await User.findById(req.user?._id)
+
     return res.status(200)
-        .json(200, req.user, "current user felchthed succesfully")
+        .json(new ApiResponce(200,user,"User Fletch succecfully "))
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
     const { fullName, email } = req.body
@@ -453,7 +327,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         throw new ApiError(400, "all fields are requard")
     }
 
-    const user = User.findByIdAndUpdate(req.user?._id,
+    const user = await User.findByIdAndUpdate(req.user?._id,
         {
             $set: {
                 fullName: fullName,
@@ -466,22 +340,16 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         .json(new ApiResponce(200, user, "Accout detalis updated successfully"))
 })
 
-
-
-
-
-
-
-
 const updateUsrAvatar = asyncHandler(async (req, res) => {
-    const avatarLocalpath = req.files?.path
+    const avatarLocalPath = req.file?.path
+    // console.log("=========>",avatarLocalPath)
 
-    if (!avatarLocalpath) {
+    if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar file is missing")
     }
 
     const avatar = await uploadOnCloudinary
-        (avatarLocalpath)
+        (avatarLocalPath)
 
     if (!avatar.url) {
         throw new ApiError(400, "Avatar file is missing(url missing)")
@@ -504,25 +372,17 @@ const updateUsrAvatar = asyncHandler(async (req, res) => {
         )
 })
 
-
-
-
-
-
-
-
-
 const updateUsrCoverImage = asyncHandler(async (req, res) => {
-    const CoverImageLocalpath = req.file?.path
-
-    if (!CoverImageLocalpath) {
+    const coverImageLocalPath = req.file?.path
+    console.log("=========>",coverImageLocalPath)
+    if (!coverImageLocalPath) {
         throw new ApiError(400, "cover image is missing")
     }
 
-    const avatar = await uploadOnCloudinary
-        (CoverImageLocalpath)
+    const coverImage = await uploadOnCloudinary
+        (coverImageLocalPath)
 
-    if (!avatar.url) {
+    if (!coverImage.url) {
         throw new ApiError(400, "cover image is missing(url missing)")
     }
 
@@ -544,94 +404,149 @@ const updateUsrCoverImage = asyncHandler(async (req, res) => {
 })
 
 
-
-
-
-
-
-
-
-
 const getUserChannelProfile = asyncHandler(async (req, res) => {
-    const { username } = req.params
-    if (!username) {
-        throw new ApiError(400, "user name not avalavel ")
-    }
-    const channel = await User.aggregate([
-        {
-            $match: {
-                username: username?.toLowerCase()
-            }
+  const { username } = req.params;
+
+  if (!username?.trim()) {
+    throw new ApiError(404, "Username is required");
+  }
+
+  const channel = await User.aggregate([
+    {
+      $match: {
+        username: username?.toLowerCase(),
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers",
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo",
+      },
+    },
+    {
+      $addFields: {
+        subscribersCount: { $size: "$subscribers" },
+
+        channelsSubscribedToCount: { $size: "$subscribedTo" },
+
+        isSubscribed: {
+          $cond: {
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+            then: true,
+            else: false,
+          },
         },
-        {
-            $lookup: {
-                from: "PushSubscriptionOptions",
-                localField: "_id",
-                foreignField: "channel",
-                as: "subscribers"
-            }
-        },
-        {
-            $lookup: {
-                from: "PushSubscriptionOptions",
-                localField: "_id",
-                foreignField: "subscriber",
-                as: "subscribersTo"
-            }
-        },
-        {
-            $addFields: {
-                SubscribersCount: {
-                    $size: "$subscribers"
-                },
+      },
+    },
 
-                channelsSubscribersToCount: {
-                    $size: "$subscribersTo"
-                },
-                isSubscribed: {
-                    $cond: {
-                        if: { $in: [req.user?._id, "$subscribers.subscriber"] },
-                        then: true,
-                        else: false
-                    }
-                }
+    {
+      $project: {
+        fullName: 1,
+        username: 1,
+        subscribersCount: 1,
+        channelsSubscribedToCount: 1,
+        isSubscribed: 1,
+        avatar: 1,
+        coverImage: 1,
+        email: 1,
+      },
+    },
+  ]);
+  if (!channel.length) {
+    throw new ApiError(404, "Channel doesn't exist");
+  }
 
-            }
-        },
-        {
-            $project: {
-                fullName: 1,
-                username: 1,
-                SubscribersCount: 1,
-                channelsSubscribersToCount: 1,
-                isSubscribed: 1,
-                avatar: 1,
-                coverImage: 1,
-                email: 1
+  return res
+    .status(200)
+    .json(
+      new ApiResponce(200, channel[0], "User channel feached successfully")
+    );
+});//Done
 
-            }
-        }
+// const getUserChannelProfile = asyncHandler(async (req, res) => {
+//     const { username } = req.params
+//     console.log(username); //debug
+    
+//     if (!username) {
+//         throw new ApiError(400, "user name not avalavel ")
+//     }
+//     const channel = await User.aggregate([
+//         {
+//             $match: {
+//                 username: username?.toLowerCase()
+//             }
+//         },
+//         {
+//             $lookup: {
+//                 from: "subscriptions",
+//                 localField: "_id",
+//                 foreignField: "channel",
+//                 as: "subscribers"
+//             }
+//         },
+//         {
+//             $lookup: {
+//                 from: "subscriptions",
+//                 localField: "_id",
+//                 foreignField: "subscriber",
+//                 as: "subscribersTo"
+//             }
+//         },
+//         {
+//             $addFields: {
+//                 SubscribersCount: {
+//                     $size: "$subscribers"
+//                 },
 
-    ])
+//                 channelsSubscribersToCount: {
+//                     $size: "$subscribersTo"
+//                 },
+//                 isSubscribed: {
+//                     $cond: {
+//                         if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+//                         then: true,
+//                         else: false
+//                     }
+//                 }
 
-    if (!channel.length) {
-        throw new ApiError(404, "channel does not exists")
-    }
+//             }
+//         },
+//         {
+//             $project: {
+//                 fullName: 1,
+//                 username: 1,
+//                 SubscribersCount: 1,
+//                 channelsSubscribersToCount: 1,
+//                 isSubscribed: 1,
+//                 avatar: 1,
+//                 coverImage: 1,
+//                 email: 1
 
-    return res
-        .status(200)
-        .json(
-            new ApiResponce(200, channel[0], "User channel flatch succesfully")
-        )
-})
+//             }
+//         }
 
+//     ])
 
+//     if (!channel.length) {
+//         throw new ApiError(404, "channel does not exists")
+//     }
 
-
-
-
-
-
+//     return res
+//         .status(200)
+//         .json(
+//             new ApiResponce(200, channel[0], "User channel flatch succesfully")
+//         )
+// })
 
 const getWatchHistory = asyncHandler(async (req, res) => {
     const user = await User.aggregate([
@@ -679,18 +594,13 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(
-            new ApiResponse(
+            new ApiResponce(
                 200,
                 user[0].watchHistory,
                 "Watch history fetched successfully"
             )
         )
 })
-
-
-
-
-
 
 // Exporting the registerUser, loginUser and logoutUser controller function for use in other modules
 export {
